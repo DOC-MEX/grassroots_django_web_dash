@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,21 @@ QUEEN_SERVER_URL = "http://10.0.152.54/grassroots/queen_bee_backend"
 # increase the limit size of files for uploading
 DATA_UPLOAD_MAX_MEMORY_SIZE =  7340032
 FILE_UPLOAD_MAX_MEMORY_SIZE =  7340032
+
+
+PLOTLY_COMPONENTS = [
+    'dash_core_components',
+    'dash_html_components',
+    'dash_renderer',
+    'dpd_components'
+]
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+PLOTLY_DASH = {
+    # Flag to control location of initial argument storage
+    "cache_arguments": False,
+}
 
 
 
