@@ -20,5 +20,6 @@ urlpatterns = [
     path('service/', include('service.urls')),
     path('fieldtrial/', include('fieldtrial.urls')),
     path('download/', include('filedownload.urls', namespace='downloads')),
+    path('django_plotly_dash/', include('django_plotly_dash.urls')),
     # path('admin/', admin.site.urls),
 ]

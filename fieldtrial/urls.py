@@ -1,5 +1,6 @@
 from django.urls import path
 from django.urls import re_path
+from . import menu_plots
 
 from . import views
 

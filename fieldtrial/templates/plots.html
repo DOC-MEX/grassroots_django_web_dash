@@ -1,5 +1,6 @@
 {% include "header.html" %}
  {% load static %}
+ {%load plotly_dash%}
 <!--content-->
 <style type="text/css">
     .modal-body {
@@ -111,7 +112,49 @@
     </div>
 </section>
 
+<!--
+  <div class="{% plotly_class name='menu_plots' %} card" style="height: 100%; width: 100%">
+    <script>
+        // Your custom JavaScript code goes here
+        // For example, you can create a WebSocket connection and send the UUID to the server
+        // and receive the response back from the WebSocket server.
+        // You can use the WebSocket API or any JavaScript library for WebSocket communication.
+        // Example using WebSocket API:
+        const socket = new WebSocket('ws://' + window.location.host + '/ws/uuid_channel/');
+        socket.onopen = function (event) {
+            const UUID = '{{ UUID }}'; // Replace with the actual UUID value
+            const data = { 'UUID': UUID };
+            socket.send(JSON.stringify(data));
+        };
+        socket.onmessage = function (event) {
+            const response = JSON.parse(event.data);
+            console.log('Received response from server:', response);
+            // Do something with the response, e.g., update the Dash plot
+        };
+    </script>
+    {% plotly_app name='menu_plots' ratio=0.45 %}
+</div>
 
+
+{{initial_arguments_json|safe}}
+-->
+<section id="heatmap">
+<div class="{% plotly_class name='menu_plots' %} card" style="height: 100%; width: 100%">        
+    {% plotly_app name="menu_plots" ratio=0.9 initial_arguments=initial_arguments_json %}          
+</div>
+
+<!--    
+
+<div class="{% plotly_class name='menu_plots' %} card" style="height: 100%; width: 100%">
+{% plotly_app name="menu_plots" ratio=0.6 initial_arguments='{"dropdown_color": {"value": "green"}}' %}
+</div>    
+
+<div class="{% plotly_class name='menu_plots' %} card" style="height: 100%; width: 100%">
+{% plotly_app name="menu_plots" ratio=0.6 %}
+</div>    
+-->
+
+<!--
 <section id="heatmap">
         <h4 id="title">Interactive heatmap</h4>
 <form action = "">
@@ -125,11 +168,7 @@
 <input type="submit" value="Submit">
 </p>
 </form>
-
-  {% autoescape off %}
-  {{ plot_div }}
-  {% endautoescape %}
-
+-->
 
 </section>
 

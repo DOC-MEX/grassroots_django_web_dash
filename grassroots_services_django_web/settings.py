@@ -141,7 +141,6 @@ QUEEN_SERVER_URL = "http://10.0.152.54/grassroots/queen_bee_backend"
 DATA_UPLOAD_MAX_MEMORY_SIZE =  52428800
 FILE_UPLOAD_MAX_MEMORY_SIZE =  17340032
 
-
 PLOTLY_COMPONENTS = [
     'dash_core_components',
     'dash_html_components',
@@ -149,13 +148,12 @@ PLOTLY_COMPONENTS = [
     'dpd_components'
 ]
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
-
 PLOTLY_DASH = {
     # Flag to control location of initial argument storage
     "cache_arguments": False,
 }
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
 try:
