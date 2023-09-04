@@ -15,26 +15,39 @@ app = DjangoDash('menu_plots')   # replaces dash.Dash
 
 #########################################################
 app.layout = html.Div(children=[
-    #html.Div(children=[
+    
     dbc.Row(
       dbc.Col(
           html.Label(['Select phenotype:'],style={'font-weight': 'bold', "text-align": "left"})  
       ),
 
-    ),# Row 1
+    ),# Row 1 message        
     dbc.Row(
       dbc.Col(
-        dcc.Dropdown( id='MENU1',
-              options = [],
-              #value   = 'SpkPop_CalcGbSamp_m2', 
-              searchable = True,
-              style={'width':"80%"}
+        dcc.Loading(
+                id="loading-menu",
+                type="circle",  
+                children=[
+                    dcc.Dropdown(
+                        id='MENU1',
+                        options=[],
+                        searchable=True,
+                        style={'width':"80%"}
+                    ),
+                ]
         ),
+        
       ),
-    ),# Row 2
+    ),# Row 2 Dropdown menu
     
-    #]),
-    dcc.Graph(id='HEATMAP'),
+    
+    dcc.Loading(
+        id="loading",
+        type="circle",  # change to 'default' or 'cube' if you prefer
+        children=[
+            dcc.Graph(id='HEATMAP')
+        ]
+    ),
     html.Br(),
     dcc.Store(id='STUDY'),
 
