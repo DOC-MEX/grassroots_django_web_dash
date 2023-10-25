@@ -147,6 +147,16 @@ QUEEN_SERVER_URL = "http://10.0.152.54/grassroots/queen_bee_backend"
 DATA_UPLOAD_MAX_MEMORY_SIZE =  52428800
 FILE_UPLOAD_MAX_MEMORY_SIZE =  17340032
 
+STATICFILES_FINDERS = [
+
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+    'django_plotly_dash.finders.DashAssetFinder',
+    'django_plotly_dash.finders.DashComponentFinder',
+]
+
+
 PLOTLY_COMPONENTS = [
     'dash_core_components',
     'dash_html_components',
