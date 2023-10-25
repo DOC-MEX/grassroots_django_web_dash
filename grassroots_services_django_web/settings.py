@@ -62,6 +62,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # 'DIRS': [os.path.join(BASE_DIR, 'grassroots_services_django_web', 'apps', 'service', 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # location of templates (ROOT LEVE)
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,6 +132,11 @@ STATIC_ROOT = "/opt/apache/htdocs/static/"
 # The web address to access the static files
 STATIC_URL = '/static/'
 
+# general location to search for static files 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'grassroots_services_django_web/static') 
+]
+
 SERVER_URL = "https://grassroots.tools/public_backend"
 PRIVATE_SERVER_URL = "https://grassroots.tools/private_backend"
 QUEEN_SERVER_URL = "http://10.0.152.54/grassroots/queen_bee_backend"
@@ -140,6 +146,16 @@ QUEEN_SERVER_URL = "http://10.0.152.54/grassroots/queen_bee_backend"
 # increase the limit size of files for uploading
 DATA_UPLOAD_MAX_MEMORY_SIZE =  52428800
 FILE_UPLOAD_MAX_MEMORY_SIZE =  17340032
+
+STATICFILES_FINDERS = [
+
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+    'django_plotly_dash.finders.DashAssetFinder',
+    'django_plotly_dash.finders.DashComponentFinder',
+]
+
 
 PLOTLY_COMPONENTS = [
     'dash_core_components',
