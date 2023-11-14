@@ -167,7 +167,8 @@ def single_plot(request, plot_id):
     initial_arguments_json = json.dumps(initial_arguments)
     print(initial_arguments_json)
     
-    return render(request, 'plots.html', {'data': plot, 'plot_id': plot_id, 'study_name': study_name, 
+    return render(request, 'fieldtrial/plot.html', {'data': plot, 'plot_id': plot_id, 'study_name': study_name, 
+    #return render(request, 'plots.html', {'data': plot, 'plot_id': plot_id, 'study_name': study_name, 
         'plot_div': plot_div, 'dictTraits':dictTraits,
         'UUID':UUID, 'initial_arguments_json': initial_arguments_json})
 
