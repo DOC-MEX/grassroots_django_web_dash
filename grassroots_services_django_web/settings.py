@@ -20,7 +20,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 
-SECRET_KEY = '^ww22@n+jl(jz!hm%qm_u-k_#^jy2z(!9q$13cngt!@yr_t&b2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
     'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'rest_framework',
     'photo_receiver',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +55,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'grassroots_services_django_web.urls'
@@ -172,6 +174,13 @@ PLOTLY_DASH = {
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
+CORS_ALLOWED_ORIGINS = [
+	"http://127.0.0.1:8000"
+]
+
+# Media files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 try:
     from .custom_settings import *
