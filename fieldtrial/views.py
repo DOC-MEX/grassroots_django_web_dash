@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import json
+import os
 
 from django.conf import settings
 import numpy as np
@@ -53,10 +54,9 @@ One study page request
 def single_study(request, study_id):
     base_url="https://grassroots.tools"
     study = get_study(study_id)
-    # data and type goes to the template study.html
-    
     result_json = json.loads (study)
     study_json = result_json ['results'][0]['results'][0]['data']
+    
     if  "phenotypes" in study_json: 
         phenotypes = result_json['results'][0]['results'][0]['data']['phenotypes']  # for CSV file
     if  'plots' in study_json: 
@@ -97,10 +97,67 @@ def single_study(request, study_id):
     field_trial_link=full_path.replace('study/', '')
     field_trial_link=field_trial_link.replace(individual_id, ft_id)
     field_trial_link=field_trial_link.replace("http://127.0.0.1:8000", base_url)
-    
-    return render(request, 'fieldtrial/study.html', {'data': study, 'study_json': study_json, 'type': 'Grassroots:Study', 'path_plots':full_path_plots, 'ft_path':field_trial_link, 'N_treatments':range(N_t), 'counters':counters, 'flag':flag} )
-    #return render(request, 'study.html', {'data': study, 'study_json': study_json, 'type': 'Grassroots:Study', 'path_plots':full_path_plots, 'ft_path':field_trial_link, 'N_treatments':range(N_t), 'counters':counters, 'flag':flag} )
 
+    ## FIND IMAGES FOR CAROUSEL 
+    ##local_base_path = "/home/daniel/Applications/apache/htdocs/TEST"
+    local_base_path = "/opt/apache/htdocs/field_trial_data/APItest"  # location in BETA SERVER
+    ##web_base_url = "http://127.0.0.1:2000/TEST"  # Web-accessible base URL
+    ## https://grassroots.tools/beta/field_trial_data/APItest/
+    ## USE ALIAS IN APACHE TO POINT TO /opt/apache/htdocs/field_trial_data/APItest
+    web_base_url="https://grassroots.tools/beta/media"
+    
+    imageUrls = []
+
+    for plot in plot_array:
+        if plot.get('rows') and plot['rows'][0].get('study_index'):
+            study_index = plot['rows'][0]['study_index']  # Extract study_index from the first row
+            #print(study_index)
+            plot_dir = f"{local_base_path}/{study_id}/plot_{study_index}"
+            web_plot_dir = f"{web_base_url}/{study_id}/plot_{study_index}"            
+            plot_images = list_image_files(web_plot_dir, plot_dir)
+            imageUrls.extend(plot_images)
+    
+    #imageUrls = [
+    #    'http://127.0.0.1:2000/TEST/64b6449ad6500621c01c65e2/plot_1/photo_plot_1_2024_02_09.jpg',
+    #    'http://127.0.0.1:2000/TEST/64b6449ad6500621c01c65e2/plot_2/photo_plot_2_2024_02_14.jpg'
+    #]
+    #imageUrls = [
+    #    'https://grassroots.tools/beta/field_trial_data/APItest/64f1e4e77c486e019b4e3017/photo_plot_1_2024_02_09.jpg',
+    #    'https://grassroots.tools/beta/field_trial_data/APItest/64f1e4e77c486e019b4e3017/photo_plot_1_2024_02_13.jpg',
+    #    'https://grassroots.tools/beta/field_trial_data/APItest/64f1e4e77c486e019b4e3017/photo_plot_2_2024_02_09.jpg',
+    #]
+    ##imageUrls = []
+
+    #return render(request, 'study.html', {'data': study, 'study_json': study_json, 'type': 'Grassroots:Study', 'path_plots':full_path_plots, 'ft_path':field_trial_link, 'N_treatments':range(N_t), 'counters':counters, 'flag':flag} )
+    return render(request, 'fieldtrial/study.html', {'data': study, 
+                                                     'study_json': study_json, 
+                                                     'type': 'Grassroots:Study', 
+                                                     'path_plots':full_path_plots, 
+                                                     'ft_path':field_trial_link, 
+                                                     'N_treatments':range(N_t), 
+                                                     'counters':counters, 
+                                                     'flag':flag, 
+                                                     'imageUrls':imageUrls } )
+def list_image_files(base_url, directory_path):
+    """
+    Generate web-accessible URLs for image files in a specified directory.
+    """
+    image_files = []
+    supported_extensions = ['.jpg', '.jpeg', '.png']
+    try:
+        # List all files in the directory
+        for item in os.listdir(directory_path):
+            # Check if the file is an image
+            if any(item.endswith(ext) for ext in supported_extensions):
+                # Construct web-accessible URL
+                image_url = f"{base_url}/{item}"
+                image_files.append(image_url)
+    except FileNotFoundError:
+        print("Directory not found:", directory_path)
+
+    return image_files
+
+    
 '''
 One study's plots page request
 '''

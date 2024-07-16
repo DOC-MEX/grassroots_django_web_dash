@@ -9,11 +9,15 @@ from django.http import FileResponse
 from django.http import JsonResponse
 import glob
 BASE_PATH = '/opt/apache/htdocs/field_trial_data/APItest/'
+#BASE_PATH = '/home/daniel/Applications/apache/htdocs/TEST/' # local path
 
 class LatestPhoto(APIView):
     def get(self, request, subfolder, plot_number):        
         ##plot_path = os.path.join(BASE_PATH, subfolder, f'photo_plot_{plot_number}_*.jpg')
-        plot_path = os.path.join(BASE_PATH, subfolder, 'photo_plot_{}_*.jpg'.format(plot_number))
+        #plot_path = os.path.join(BASE_PATH, subfolder, 'photo_plot_{}_*.jpg'.format(plot_number))
+        # Construct the path including the new intermediate subfolder
+        plot_folder = 'plot_{}'.format(plot_number)
+        plot_path = os.path.join(BASE_PATH, subfolder, plot_folder, 'photo_plot_{}_*.jpg'.format(plot_number))
 
         # Find all photos for the plot
         photos = glob.glob(plot_path)
@@ -23,9 +27,9 @@ class LatestPhoto(APIView):
         # Find the most recent photo
         latest_photo = max(photos, key=os.path.getctime)
         latest_photo_filename = os.path.basename(latest_photo)
-        photo_url = request.build_absolute_uri(os.path.join(settings.MEDIA_URL, subfolder, latest_photo_filename))
+        photo_url = request.build_absolute_uri(os.path.join(settings.MEDIA_URL, subfolder, plot_folder, latest_photo_filename))
          # Manually construct the URL
-        photo_url = 'https://grassroots.tools/beta' + os.path.join(settings.MEDIA_URL, subfolder, latest_photo_filename)
+        photo_url = 'https://grassroots.tools/beta' + os.path.join(settings.MEDIA_URL, subfolder, plot_folder, latest_photo_filename)
 
         print(photo_url)
         # Serve the photo
