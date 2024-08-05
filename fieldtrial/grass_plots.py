@@ -27,8 +27,9 @@ def get_plot(id):
                         "param": "ST Id",
                         "current_value": id
                     }, {
-                        "param": "Get all Plots for Study",
-                        "current_value": True
+                        #"param": "Get all Plots for Study",
+                        #"current_value": True
+                        "param": "The level of data to get for matching Studies", "current_value": "Full"
                     }, {
                         "param": "ST Search Studies",
                         "current_value": True
