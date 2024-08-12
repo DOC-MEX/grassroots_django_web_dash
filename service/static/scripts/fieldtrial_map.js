@@ -1565,6 +1565,7 @@ function formatPlotModal(plot) {
  *
  * @param {JSON} plot - Plot JSON.
  * @param {Boolean} replicate_bool - Boolean if it is a replicate.
+ * used to create the modal window in the study page for each plot over the map
  */
 function format_plot_rows(plot, replicate_bool) {
     let plotId = plot['_id']['$oid'];
@@ -1638,8 +1639,9 @@ function format_plot_rows(plot, replicate_bool) {
                 phenotypearray.push('<tr>');
                 phenotypearray.push('<td style="background-color:' + color + '">' + SafePrint(replicate_index) + replicate + '</td>');
                 
-		phenotypearray.push('<td>' + SafePrint(plot['rows'][r]['rack_index']) + '</td>');
-                phenotypearray.push('<td>' + SafePrint(observation['date']) + '</td>');
+		        phenotypearray.push('<td>' + SafePrint(plot['rows'][r]['rack_index']) + '</td>');
+                let observationDate = observation['date'] ? new Date(observation['date']).toISOString().split('T')[0] : 'N/A';          
+                phenotypearray.push('<td>' + observationDate + '</td>');
                 phenotypearray.push('<td>' + SafePrint(observation['raw_value']) + '</td>');
                 phenotypearray.push('<td>' + SafePrint(observation['corrected_value']) + '</td>');
 
@@ -1691,7 +1693,7 @@ function simpleOrAdvanced_pheno(string) {
     var pheno_table = $('#plots_table').DataTable();
     if (string === 'show_simple') {
         pheno_table.column(1).visible(false);
-        pheno_table.column(2).visible(false);
+        pheno_table.column(2).visible(true); // date
         pheno_table.column(3).visible(true); // raw value current plot
         pheno_table.column(4).visible(false);// corrected value
         pheno_table.column(5).visible(true); // Replicate 1
@@ -2152,6 +2154,7 @@ function lookup(name, key1, key2) {
  * @param  replicate      Rows of the exact replicates
  */
 
+// For modal tables of individual observations in the plots.html template.
 function format_pheno(plotCurrent, replicateIds, replicates, noReplicates){
    //console.log("--TEST ID ", plotCurrent['rows'][0]['study_index'] );
    // console.log("observation size current plot",  plotCurrent['rows'][0]['observations'].length );//    ******** ADD CHECK DISCARDED!
@@ -2218,9 +2221,11 @@ function format_pheno(plotCurrent, replicateIds, replicates, noReplicates){
         phenotypearray.push('<tr>');
         phenotypearray.push('<td style="background-color:' + color + '">' + SafePrint(current_index) + ' Plot ' + plot_actual_id + '(Current) </td>');
         phenotypearray.push('<td>' + SafePrint(plotCurrent['rows'][0]['rack_index']) + '</td>');
-	phenotypearray.push('<td>' + SafePrint(observation['date'])      + '</td>');
-	phenotypearray.push('<td>' + round2Fixed(SafePrint(observation['raw_value']))  + '</td>');
-	phenotypearray.push('<td>' + SafePrint(observation['corrected_value']) + '</td>'); // Restore corrected value.
+	    let observationDate = observation['date'] ? new Date(observation['date']).toISOString().split('T')[0] : 'N/A';          
+        phenotypearray.push('<td>' + observationDate + '</td>');
+
+	    phenotypearray.push('<td>' + round2Fixed(SafePrint(observation['raw_value']))  + '</td>');
+	    phenotypearray.push('<td>' + SafePrint(observation['corrected_value']) + '</td>'); // Restore corrected value.
 	
 	// ******* Two extra columns of raw values of exact replicate plots. ********** 
 	if(noReplicates==false){
