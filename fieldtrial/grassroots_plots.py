@@ -59,7 +59,7 @@ def searchPhenotypeUnit(listPheno, value):
 '''
 test rendering plotly interactive heatmap
 '''
-def plotly_plot(numpy_matrix, accession, title, unit, IDs, treatments):
+def plotly_plot(numpy_matrix, accession, title, unit, IDs, treatments, dates):
 
     ##numpy_matrix = np.flipud(numpy_matrix)      # To Match order shown originally in JS code
     #plotID      = np.flipud(IDs)        
@@ -116,20 +116,38 @@ def plotly_plot(numpy_matrix, accession, title, unit, IDs, treatments):
             labels=dict(x="columns", y="rows", color=units),
             color_continuous_scale=px.colors.sequential.Greens, height=800 )
 
-    #print(treatments)
     if len(treatments)>0:
         treatments = treatments.reshape(Y,X)
         treatments = np.flipud(treatments)
 
-        fig.update_traces(
-        customdata = np.moveaxis([accession, s_matrix, plotID, treatments], 0,-1),
-        #hovertemplate="Accession: %{customdata[0]}<br>raw value: %{customdata[1]:.2f}  <extra></extra>")
-        hovertemplate="Accession: %{customdata[0]}<br>Raw value: %{customdata[1]}<br>Plot ID: %{customdata[2]} (column: %{x}, row: %{y})<br>Treatment: %{customdata[3]} <extra></extra>")
+        if len(dates)>0:  # Only include dates if they are not an empty list
+            dates = dates.reshape(Y, X)
+            dates = np.flipud(dates)
+            fig.update_traces(
+                customdata=np.moveaxis([accession, s_matrix, plotID, treatments, dates], 0, -1),
+                hovertemplate="Accession: %{customdata[0]}<br>Raw value: %{customdata[1]}<br>Plot ID: %{customdata[2]} (column: %{x}, row: %{y})<br>Treatment: %{customdata[3]}<br>Date: %{customdata[4]}<extra></extra>"
+            )
+        else:
+            fig.update_traces(
+                customdata=np.moveaxis([accession, s_matrix, plotID, treatments], 0, -1),
+                hovertemplate="Accession: %{customdata[0]}<br>Raw value: %{customdata[1]}<br>Plot ID: %{customdata[2]} (column: %{x}, row: %{y})<br>Treatment: %{customdata[3]}<extra></extra>"
+            )
+
 
     else:
-        fig.update_traces(
-        customdata = np.moveaxis([accession, s_matrix, plotID], 0,-1),
-        hovertemplate="Accession: %{customdata[0]}<br>Raw value: %{customdata[1]}<br>Plot ID: %{customdata[2]} (column: %{x}, row:%{y})<extra></extra>")
+        if len(dates)>0:  # Only include dates if they are not an empty list
+            dates = dates.reshape(Y, X)
+            dates = np.flipud(dates)
+            fig.update_traces(
+                customdata=np.moveaxis([accession, s_matrix, plotID, dates], 0, -1),
+                hovertemplate="Accession: %{customdata[0]}<br>Raw value: %{customdata[1]}<br>Plot ID: %{customdata[2]} (column: %{x}, row:%{y})<br>Date: %{customdata[3]}<extra></extra>"
+            )
+        else:
+            fig.update_traces(
+                customdata=np.moveaxis([accession, s_matrix, plotID], 0, -1),
+                hovertemplate="Accession: %{customdata[0]}<br>Raw value: %{customdata[1]}<br>Plot ID: %{customdata[2]} (column: %{x}, row:%{y})<extra></extra>"
+            )
+
 
     fig.update_layout(font=dict(family="Courier New, monospace",size=12,color="Black"),title={
         'text': title,
@@ -149,6 +167,35 @@ def plotly_plot(numpy_matrix, accession, title, unit, IDs, treatments):
 
     
     return plot_div
+
+#########################################################################################################
+def observation_dates(arraysJson, rows, columns, current_name):
+    dt = np.dtype(('U', 80))  # Adjust dtype if date strings are longer
+    matrix = np.zeros((rows, columns), dtype=dt)
+    matrix[:] = "N/A"
+
+    for r in range(len(arraysJson)):
+        i = int(arraysJson[r]['row_index'])
+        j = int(arraysJson[r]['column_index'])
+        i = i - 1
+        j = j - 1
+
+        if 'observations' in arraysJson[r]['rows'][0]:
+            # Filter observations by the selected phenotype
+            relevant_observations = [
+                obs for obs in arraysJson[r]['rows'][0]['observations'] if obs['phenotype']['variable'] == current_name
+            ]
+
+            if relevant_observations:
+                # Sort observations by date and select the latest one
+                relevant_observations.sort(key=lambda x: x.get('date', ''), reverse=True)
+                latest_observation = relevant_observations[0]
+                observation_date = latest_observation.get('date', 'N/A').split('T')[0]  # Keep only the date part
+                matrix[i][j] = observation_date
+
+    matrix = matrix.flatten()
+    return matrix
+
 
 ############################################################################################
 '''
@@ -362,18 +409,27 @@ def numpy_data(json, pheno, current_name, total_rows, total_columns):
                     plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'] )
      
                elif ( 'observations' in json[j]['rows'][0] ):
-                    if( search_phenotype(json[j]['rows'][0]['observations'], current_name) ):
-                        indexCurrentPhenotype = search_phenotype_index (json[j]['rows'][0]['observations'], current_name)                        
-                        if 'raw_value' in json[j]['rows'][0]['observations'][indexCurrentPhenotype]:
-                            row_raw  = np.append(row_raw, json[j]['rows'][0]['observations'][indexCurrentPhenotype]['raw_value'])
-                        if 'corrected_value' in json[j]['rows'][0]['observations'][indexCurrentPhenotype]:
-                            row_raw  = np.append(row_raw, json[j]['rows'][0]['observations'][indexCurrentPhenotype]['corrected_value'])
-                        row_acc  = np.append(row_acc, json[j]['rows'][0]['material']['accession']) 
-                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'] )
+                    if search_phenotype(json[j]['rows'][0]['observations'], current_name):
+                        # Instead of getting the first match, we now sort the relevant observations by date
+                        relevant_observations = [
+                            obs for obs in json[j]['rows'][0]['observations'] if lookup_keys(obs, 'phenotype.variable') == current_name
+                        ]
+                        relevant_observations.sort(key=lambda x: x.get('date', ''), reverse=True)
+                        latest_observation = relevant_observations[0]
+                        #print("latest_observations -> ", latest_observation)
+
+                        if 'raw_value' in latest_observation:
+                            row_raw = np.append(row_raw, latest_observation['raw_value'])
+                        if 'corrected_value' in latest_observation:
+                            row_raw = np.append(row_raw, latest_observation['corrected_value'])
+
+                        row_acc = np.append(row_acc, json[j]['rows'][0]['material']['accession'])
+                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'])
                     else:
-                        row_raw  = np.append(row_raw, np.inf )  # use infinity for N/A data
-                        row_acc  = np.append(row_acc, json[j]['rows'][0]['material']['accession'])  
-                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'] )
+                        row_raw = np.append(row_raw, np.inf)  # use infinity for N/A data
+                        row_acc = np.append(row_acc, json[j]['rows'][0]['material']['accession'])
+                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'])
+
                else:
                   if('rows' in json[j]):      # when plots have rows but no observations!!
                         row_raw = np.append(row_raw, np.inf ) #   use infinity for N/A data
@@ -398,18 +454,26 @@ def numpy_data(json, pheno, current_name, total_rows, total_columns):
                     plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'] )
 
             elif ( 'observations' in json[j]['rows'][0] ):
-                    if( search_phenotype(json[j]['rows'][0]['observations'], current_name) ):
-                        indexCurrentPhenotype = search_phenotype_index (json[j]['rows'][0]['observations'], current_name)
-                        if 'raw_value' in json[j]['rows'][0]['observations'][indexCurrentPhenotype]:
-                            row_raw  = np.append(row_raw, json[j]['rows'][0]['observations'][indexCurrentPhenotype]['raw_value'])
-                        if 'corrected_value' in json[j]['rows'][0]['observations'][indexCurrentPhenotype]:
-                            row_raw  = np.append(row_raw, json[j]['rows'][0]['observations'][indexCurrentPhenotype]['corrected_value'])
-                        row_acc  = np.append(row_acc, json[j]['rows'][0]['material']['accession']) 
-                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'] )
+                    if search_phenotype(json[j]['rows'][0]['observations'], current_name):
+                        # Instead of getting the first match, we now sort the relevant observations by date
+                        relevant_observations = [
+                            obs for obs in json[j]['rows'][0]['observations'] if lookup_keys(obs, 'phenotype.variable') == current_name
+                        ]
+                        relevant_observations.sort(key=lambda x: x.get('date', ''), reverse=True)
+                        latest_observation = relevant_observations[0]
+                        print("latest_observations -> ", latest_observation)
+
+                        if 'raw_value' in latest_observation:
+                            row_raw = np.append(row_raw, latest_observation['raw_value'])
+                        if 'corrected_value' in latest_observation:
+                            row_raw = np.append(row_raw, latest_observation['corrected_value'])
+
+                        row_acc = np.append(row_acc, json[j]['rows'][0]['material']['accession'])
+                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'])
                     else:
-                        row_raw  = np.append(row_raw, np.inf )
-                        row_acc  = np.append(row_acc, json[j]['rows'][0]['material']['accession'])  
-                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'] )
+                        row_raw = np.append(row_raw, np.inf)  # use infinity for N/A data
+                        row_acc = np.append(row_acc, json[j]['rows'][0]['material']['accession'])
+                        plotsIds = np.append(plotsIds, json[j]['rows'][0]['study_index'])
             else:
                   if('rows' in json[j]):      # when plots have rows but no observations!!
                         row_raw = np.append(row_raw, np.inf ) #   use infinity for N/A data
