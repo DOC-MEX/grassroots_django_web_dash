@@ -1,6 +1,7 @@
 
 import plotly.express as px
 import pandas as pd
+import numpy as np
 
 #import json
 #from .grass_plots import get_plot
@@ -8,6 +9,7 @@ from .grass_plots import dict_phenotypes
 from .grass_plots import numpy_data
 from .grass_plots import treatments
 from .grass_plots import plotly_plot
+from .grass_plots import observation_dates
 #######################################################
 def plots_heatmap(uuid, phenotype, study_json):
     #single_study = get_plot(uuid)
@@ -40,6 +42,7 @@ def plots_heatmap(uuid, phenotype, study_json):
     phenoKeys   = list(dictTraits.keys())
     #phenoValues = list(dictTraits.values())
     #selected_phenotype = default
+    print(" phenotype input: ", phenotype)
  
     print("DASH number of phenotypes observations: ", len(phenoKeys))
 
@@ -61,13 +64,18 @@ def plots_heatmap(uuid, phenotype, study_json):
     #-----------------------CSV--------------------------------------
     #create_CSV(plot_data, phenotypes, treatment_factors, uuid)
     #-----------------------CSV--------------------------------------
+    # create matrix of dates
+    dates = observation_dates(plot_data, row, column, phenotype)
+    if np.all(dates == "N/A"):
+        dates = []  # Empty list if all dates are "N/A"
+
 
     accession  = row_acc.reshape(row,column)    #!! at this point 2D array has not been flipped!
     plotIDs    = plotID.reshape(row,column)
     
     #print("original unflipped accession---: ", np.shape(accession))
     
-    figure = plotly_plot(row_raw, accession, traitName, units, plotIDs, treatment)
+    figure = plotly_plot(row_raw, accession, traitName, units, plotIDs, treatment, dates)
     del plot_data, matrices, study_json
 
     return figure

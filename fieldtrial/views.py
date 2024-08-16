@@ -219,7 +219,7 @@ def single_plot(request, plot_id):
         dates = []  # Empty list if all dates are "N/A"
 
     create_CSV(plot_array, phenotypes, treatment_factors, plot_id)
-    plot_div = plotly_plot(row_raw, accession, traitName, units, plotIDs, treatment, dates)
+    ###plot_div = plotly_plot(row_raw, accession, traitName, units, plotIDs, treatment, dates)
     #image    = seaborn_plot(static,   traitName,  units)
     UUID     = plot_id
     print("UUID", UUID)
@@ -252,7 +252,7 @@ def single_plot(request, plot_id):
     #print("Image URLs: ", imageUrls)
 
     return render(request, 'fieldtrial/plots.html', {'data': data, 'plot_id': plot_id, 'study_name': study_name, 
-        'plot_div': plot_div, 'dictTraits':dictTraits,
+         'dictTraits':dictTraits, ##'plot_div': plot_div,
           'imageUrls':imageUrls,
           'UUID': UUID,
           'initial_arguments_json': initial_arguments_json})
